@@ -66,6 +66,96 @@ const MultiLineChart = ({ data }) => {
 };
 
 
+// Stock Analysis Component
+const StockAnalysisSection = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStockData() {
+      try {
+        const res = await fetch('/api/stock-analysis');
+        const json = await res.json();
+        setData(json.data);
+      } catch (error) {
+        console.error("Failed to fetch stock analysis:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStockData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="glass-panel mt-4" style={{ padding: '2rem', textAlign: 'center' }}>
+        <h3 className="text-secondary" style={{ animation: 'pulse 2s infinite' }}>Running Gemini AI Quant Analysis...</h3>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) return null;
+
+  return (
+    <div className="mt-4" style={{ marginBottom: '2rem' }}>
+      <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', marginTop: '3rem' }}>Statistical AI Analysis</h2>
+      <div className="grid-cards">
+        {data.map((stock) => {
+           let actionColor = 'var(--status-yellow)';
+           if (stock.analysis?.action) {
+               const action = String(stock.analysis.action).toUpperCase();
+               if (action.includes('BUY')) actionColor = 'var(--status-green)';
+               if (action.includes('SELL')) actionColor = 'var(--status-red)';
+           }
+           
+           return (
+             <div key={stock.symbol} className="glass-panel" style={{ padding: '1.5rem', borderTop: `4px solid ${actionColor}` }}>
+               <div className="flex-between mb-2">
+                 <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{stock.symbol}</h3>
+                 <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>${stock.current_price}</span>
+               </div>
+               
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                 <div className="text-secondary">Take Profit:</div>
+                 <div style={{ color: 'var(--status-green)', textAlign: 'right' }}>${stock.tp_line || 'N/A'}</div>
+                 <div className="text-secondary">Stop Loss:</div>
+                 <div style={{ color: 'var(--status-red)', textAlign: 'right' }}>${stock.sl_line || 'N/A'}</div>
+                 <div className="text-secondary">E[max]:</div>
+                 <div style={{ textAlign: 'right' }}>${stock.e_max || 'N/A'}</div>
+               </div>
+
+               {stock.analysis && !stock.analysis.error ? (
+                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px' }}>
+                   <div style={{ marginBottom: '0.5rem' }}>
+                     <span className="text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>AI ACTION</span>
+                     <div style={{ color: actionColor, fontWeight: 'bold', fontSize: '1.1rem' }}>{String(stock.analysis.action).toUpperCase()}</div>
+                   </div>
+                   <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', lineHeight: '1.4' }}>
+                     <strong style={{ color: 'var(--text-primary)' }}>Position:</strong> <span className="text-secondary">{stock.analysis.position}</span>
+                   </div>
+                   <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', lineHeight: '1.4' }}>
+                     <strong style={{ color: 'var(--text-primary)' }}>Targets:</strong> <span className="text-secondary">
+                       {typeof stock.analysis.targets === 'object' ? JSON.stringify(stock.analysis.targets) : stock.analysis.targets}
+                     </span>
+                   </div>
+                   <div style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#0ea5e9', borderLeft: '2px solid #0ea5e9', paddingLeft: '0.5rem' }}>
+                     "{stock.analysis.description}"
+                   </div>
+                 </div>
+               ) : (
+                 <div className="text-red" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
+                   {stock.analysis?.error || "AI Analysis unavailable."}
+                 </div>
+               )}
+             </div>
+           )
+        })}
+      </div>
+    </div>
+  );
+};
+
+
 export default function Home() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -237,6 +327,7 @@ export default function Home() {
         </div>
 
       </div>
+      <StockAnalysisSection />
     </main>
   );
 }
