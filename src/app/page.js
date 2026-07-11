@@ -159,6 +159,7 @@ const StockAnalysisSection = () => {
 export default function Home() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -327,7 +328,32 @@ export default function Home() {
         </div>
 
       </div>
-      <StockAnalysisSection />
+
+      {!showScanner ? (
+        <div style={{ textAlign: 'center', marginTop: '3rem', marginBottom: '2rem' }}>
+          <button 
+            style={{ 
+              padding: '1rem 2.5rem', 
+              fontSize: '1.2rem', 
+              cursor: 'pointer', 
+              background: 'var(--accent-blue)', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '8px', 
+              fontWeight: 'bold',
+              boxShadow: '0 4px 15px rgba(14, 165, 233, 0.3)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(14, 165, 233, 0.5)'; }}
+            onMouseOut={(e) => { e.target.style.transform = 'none'; e.target.style.boxShadow = '0 4px 15px rgba(14, 165, 233, 0.3)'; }}
+            onClick={() => setShowScanner(true)}
+          >
+            Run AI Stock Scan
+          </button>
+        </div>
+      ) : (
+        <StockAnalysisSection />
+      )}
     </main>
   );
 }
